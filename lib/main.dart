@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 void main() => runApp(MyApp());
@@ -10,33 +10,31 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Nosleep',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
+        accentColor: Colors.indigoAccent,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: PostsPage(title: 'Flutter Nosleep'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+class PostsPage extends StatefulWidget {
+  PostsPage({Key key, this.title}) : super(key: key);
 
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _PostsPageState createState() => _PostsPageState();
 }
 
-Future<http.Response> fetchPost() {
-  //return http.get('https://www.reddit.com/r/nosleep/comments/bofews/i_work_at_a_zoo.json');
-}
-
-class _MyHomePageState extends State<MyHomePage> {
+class _PostsPageState extends State<PostsPage> {
   List<dynamic> _posts;
 
   void fetchHot() {
-    http.get('https://www.reddit.com/r/nosleep/hot.json').then((response) {
+    get('https://www.reddit.com/r/nosleep/hot.json').then((response) {
       List<dynamic> posts = jsonDecode(response.body)['data']['children']
           .map((child) => child['data'])
           .map((data) => {
@@ -56,10 +54,6 @@ class _MyHomePageState extends State<MyHomePage> {
         _posts = posts;
       });
     });
-
-    /*setState(() {
-      _counter++;
-    });*/
   }
 
   @override
