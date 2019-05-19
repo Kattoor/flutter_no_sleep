@@ -5,6 +5,9 @@ import 'package:flutter_no_sleep/reddit_icons.dart';
 import 'package:http/http.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
+import 'package:markdown/markdown.dart' as md;
+import 'package:html/parser.dart';
+import 'dart:math';
 
 void main() => runApp(MyApp());
 
@@ -50,6 +53,14 @@ class _PostsPageState extends State<PostsPage> {
                 'amountofComments': data['num_comments'],
                 'link': data['url'],
                 'createdUTC': data['created_utc'],
+                'short': (() {
+                  var parsed = parse(
+                          parse(md.markdownToHtml(data['selftext'])).body.text)
+                      .documentElement
+                      .text
+                      .replaceAll(RegExp(r"\s"), " ");
+                  return parsed.substring(0, [200, parsed.length].reduce(min));
+                })()
               })
           .toList();
 
@@ -65,7 +76,7 @@ class _PostsPageState extends State<PostsPage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(child: getBody()),
+      body: Container(color: Colors.black, child: Center(child: getBody())),
       bottomNavigationBar: FancyBottomNavigation(
         tabs: [
           TabData(iconData: Reddit.hot, title: "Hot"),
@@ -83,6 +94,62 @@ class _PostsPageState extends State<PostsPage> {
     );
   }
 
+  Widget getListTile(BuildContext context, int index) {
+    return Container(
+      color: Color.fromARGB(255, 20, 20, 20),
+      child: ListTile(
+        leading: Column(
+          children: [
+            Icon(
+              Icons.keyboard_arrow_up,
+              size: 20,
+              color: Color.fromARGB(255, 255, 106, 50),
+            ),
+            Text(
+              _posts[index]['upvotes'].toString(),
+              style: TextStyle(color: Color.fromARGB(255, 255, 106, 50)),
+            ),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 20,
+              color: Color.fromARGB(255, 141, 168, 255),
+            ),
+          ],
+        ),
+        title: Padding(
+          padding: EdgeInsets.only(top: 10, bottom: 10),
+          child: Text(
+            _posts[index]['title'],
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        subtitle: Container(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 15),
+            child: Text(
+              _posts[index]['short'],
+              overflow: TextOverflow.ellipsis,
+              maxLines: 3,
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ),
+        ),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => Scaffold(
+                    body: Markdown(
+                      data: _posts[index]['content'],
+                      padding: EdgeInsets.fromLTRB(20, 50, 20, 50),
+                    ),
+                  ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget getBody() {
     if (_posts == null || _posts.length == 0)
       return CircularProgressIndicator();
@@ -90,41 +157,11 @@ class _PostsPageState extends State<PostsPage> {
     return Container(
         padding: EdgeInsets.only(top: 5),
         child: ListView.separated(
-          itemBuilder: (context, index) => ListTile(
-                leading: Column(
-                  children: [
-                    Icon(
-                      Icons.keyboard_arrow_up,
-                      size: 20,
-                      color: Color.fromARGB(255, 255, 106, 50),
-                    ),
-                    Text(
-                      _posts[index]['upvotes'].toString(),
-                      style:
-                          TextStyle(color: Color.fromARGB(255, 255, 106, 50)),
-                    ),
-                    Icon(
-                      Icons.keyboard_arrow_down,
-                      size: 20,
-                      color: Color.fromARGB(255, 141, 168, 255),
-                    ),
-                  ],
-                ),
-                title: Text(_posts[index]['title']),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (ctx) => Scaffold(
-                            body: Markdown(
-                              data: _posts[index]['content'],
-                              padding: EdgeInsets.fromLTRB(20, 50, 20, 50),
-                            ),
-                          ),
-                    ),
-                  );
-                },
+          itemBuilder: (context, index) => getListTile(context, index),
+          separatorBuilder: (context, index) => Container(
+                height: 5,
+                color: Colors.black,
               ),
-          separatorBuilder: (context, index) => Divider(),
           itemCount: _posts?.length ?? 0,
         ));
   }
