@@ -94,58 +94,89 @@ class _PostsPageState extends State<PostsPage> {
     );
   }
 
-  Widget getListTile(BuildContext context, int index) {
+  Widget upVotePanel(int index) {
     return Container(
-      color: Color.fromARGB(255, 20, 20, 20),
-      child: ListTile(
-        leading: Column(
-          children: [
-            Icon(
-              Icons.keyboard_arrow_up,
-              size: 20,
-              color: Color.fromARGB(255, 255, 106, 50),
-            ),
-            Text(
-              _posts[index]['upvotes'].toString(),
-              style: TextStyle(color: Color.fromARGB(255, 255, 106, 50)),
-            ),
-            Icon(
-              Icons.keyboard_arrow_down,
-              size: 20,
-              color: Color.fromARGB(255, 141, 168, 255),
-            ),
-          ],
-        ),
-        title: Padding(
-          padding: EdgeInsets.only(top: 10, bottom: 10),
-          child: Text(
-            _posts[index]['title'],
-            style: TextStyle(color: Colors.white),
+      width: 70,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.keyboard_arrow_up,
+            color: Color.fromARGB(255, 255, 106, 50),
           ),
-        ),
-        subtitle: Container(
-          child: Padding(
-            padding: EdgeInsets.only(bottom: 15),
-            child: Text(
-              _posts[index]['short'],
-              overflow: TextOverflow.ellipsis,
-              maxLines: 3,
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
+          Text(
+            _posts[index]['upvotes'].toString(),
+            style: TextStyle(color: Color.fromARGB(255, 255, 106, 50)),
           ),
-        ),
+          Icon(
+            Icons.keyboard_arrow_down,
+            color: Color.fromARGB(255, 141, 168, 255),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget contentPanel(int index) {
+    return Expanded(
+      child: GestureDetector(
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (ctx) => Scaffold(
-                    body: Markdown(
-                      data: _posts[index]['content'],
-                      padding: EdgeInsets.fromLTRB(20, 50, 20, 50),
-                    ),
+              builder: (ctx) {
+                return Scaffold(
+                  body: Markdown(
+                    data: _posts[index]['content'],
+                    padding: EdgeInsets.fromLTRB(20, 50, 20, 50),
                   ),
+                );
+              },
             ),
           );
         },
+        child: Container(
+          padding: EdgeInsets.only(right: 15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(top: 10, bottom: 10),
+                child: Text(
+                  _posts[index]['title'],
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              Container(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 15),
+                  child: Text(
+                    _posts[index]['short'],
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 3,
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget getListTile(BuildContext context, int index) {
+    return Container(
+      padding: EdgeInsets.all(5),
+      color: Color.fromARGB(255, 20, 20, 20),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            upVotePanel(index),
+            contentPanel(index),
+          ],
+        ),
       ),
     );
   }
