@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:core';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_no_sleep/AuthEvents.dart';
 import 'package:flutter_no_sleep/reddit_icons.dart';
 import 'package:http/http.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -8,6 +11,8 @@ import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:html/parser.dart';
 import 'dart:math';
+
+import 'AuthBLoC.dart';
 
 void main() => runApp(MyApp());
 
@@ -37,6 +42,7 @@ class PostsPage extends StatefulWidget {
 class _PostsPageState extends State<PostsPage> {
   List<dynamic> _posts;
   int _currentPage = 0;
+  final authBloc = AuthBLoC();
 
   void fetch(String category) {
     get('https://www.reddit.com/r/nosleep/' + category + '.json')
@@ -75,6 +81,23 @@ class _PostsPageState extends State<PostsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          StreamBuilder(
+            stream: authBloc.streamProfileData,
+            initialData: '',
+            builder: (context, snapshot) {
+              return Center(
+                child: Text(snapshot.data.toString()),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.account_circle),
+            onPressed: () {
+              authBloc.authRequestEventSink.add(AuthRequestEvent());
+            },
+          ),
+        ],
       ),
       body: Container(color: Colors.black, child: Center(child: getBody())),
       bottomNavigationBar: FancyBottomNavigation(
